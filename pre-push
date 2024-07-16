@@ -1,0 +1,96 @@
+#!/bin/bash
+
+displayPushMsg() {
+ echo "
+================ Push ===============
+🚀 Now pushing to remote...
+=====================================
+"
+}
+
+formatChangedFiles() {
+# Store changed filenames and split into array with newline
+changedFiles=$(git diff --name-only origin..HEAD -- '*.kt' '*.kts')
+changedFilesArray=$(echo $changedFiles | tr ";" "\\n")
+
+echo "
+=============== Ktlint ==============
+🖥️  Running linter on changed files...
+
+$changedFiles
+=====================================
+"
+
+# Command to run linter w/ auto-format
+git diff --name-only -z origin..HEAD -- '*.kt' '*.kts' | ktlint --format --relative --patterns-from-stdin=''
+
+if [[ $? -eq 0 ]]; then
+echo "
+============== Success ==============
+🎉 Ktlint ran successfully and auto-formatted any files as necessary!
+=====================================
+"
+
+# Replay items in the changed files array and add only those files
+for file in $changedFilesArray
+do
+ git add $file
+done
+
+# Check if there are any changes to commit
+if [ -n "$(git status --porcelain)" ]; then
+echo "
+=============== Commit ==============
+✏️  Automatically committing linted files...
+=====================================
+"
+ git commit -m "Automatically commit linted files" --no-verify
+
+ displayPushMsg
+
+ git push origin $branch --no-verify
+ exit 1 # Exit with error here to prevent double push (the first being when the user tries to push
+        # which initiates this script, and the second being the line above here where the script is
+        # pushing after auto-committing linted files)
+fi
+
+displayPushMsg
+
+else
+echo "
+================ Note ===============
+📌 To manually run Ktlint and auto-format on staged files run the following command:
+git diff --name-only -z --cached --relative -- '*.kt' '*.kts' | ktlint --format --relative --patterns-from-stdin=''
+
+Or to auto-format a single file:
+ktlint -F path/to/File.kt
+=====================================
+"
+exit 1
+fi
+} # End function formatChangedFiles()
+
+# Skip linter for 'develop' and 'release/*' branches
+if branch=$(git symbolic-ref --short -q HEAD) # Determines if git branch can be determined
+then
+ if [[ "$branch" == "develop" || "$branch" =~ ^release/ ]]
+ then
+   printf "\n⏩ Skipping linter on '$branch' branch...\n\n"
+   exit 0
+ fi
+fi
+
+# Check if ktlint is available
+command -v ktlint >/dev/null 2>&1
+
+# Exit status of the previous command
+if [[ $? -eq 0 ]]; then
+ formatChangedFiles
+else
+ printf "\nKtlint is not installed."
+ printf "\nInstalling Ktlint using Homebrew...\n\n"
+ brew install ktlint || { printf "\nFailed to install Ktlint. Please check your Homebrew installation (https://brew.sh/).\n\n"; exit 1; }
+ printf "\nKtlint installed successfully.\n"
+ formatChangedFiles
+fi
+
