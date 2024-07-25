@@ -5,7 +5,7 @@ This is a script that runs a linter ([ktlint](https://pinterest.github.io/ktlint
 Using this script formats only the changed files in a PR and makes a separate commit for it (if ktlint was able to run w/o errors).
 
 ## Who is this designed for?
-Large codebases that have not yet setup a linter. The reason to use this is to avoid doing a one-time lint run across an entire codebase which will mess up git blame and could be a lot of work to fix all the errors.
+Large Android codebases that have not yet setup a linter. The reason to use this is to avoid doing a one-time lint run across an entire codebase which will mess up git blame and could be a lot of work to fix all the errors.
 
 ## Installation instructions
 1. Create a folder in your project in Android Studio at the top level called `scripts` if it doesn't exist already.
