@@ -1,4 +1,4 @@
-# Pre-push linter script for Android projects
+# Pre-push linter git hook for Android projects
 
 ## What is this?
 This is a script that runs a linter ([ktlint](https://pinterest.github.io/ktlint/latest/)) for Android projects and automatically formats code right before doing a git push.
