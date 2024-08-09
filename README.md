@@ -15,7 +15,7 @@ Large Android codebases that have not yet setup a linter. The reason to use this
 task installGitHook(type: Copy) {
     from new File(rootProject.rootDir, 'scripts/pre-push')
     into { new File(rootProject.rootDir, '.git/hooks') }
-    fileMode 0777
+    fileMode 0775
 }
 
 tasks.getByPath(':app:preBuild').dependsOn installGitHook
